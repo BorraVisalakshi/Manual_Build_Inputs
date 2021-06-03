@@ -1,0 +1,45 @@
+# This workflow will build a Java project with Maven
+# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-maven
+
+name: Java CI with Maven
+
+on:
+   workflow_dispatch:
+    inputs:
+      scan:
+       description: 'Send for scan'
+       required: true
+       default: ''
+      artifactory:
+       description: 'Upload to Artifactory'
+       required: true
+       default: ''
+       
+jobs:
+  build:
+
+    runs-on: self-hosted
+
+    steps:
+    
+    - name: Checkout Code
+      uses: actions/checkout@v2
+      
+    - name: Build with Maven
+      run: mvn clean install
+      
+    - name: Zip the Source code
+      uses: papeloto/action-zip@v1
+      if: ${{ github.event.inputs.scan == 'yes' }}
+      with:
+          dest: SampleWebApp.zip
+          
+    - name: Step-3 Upload to Artifactory
+      if: ${{ github.event.inputs.artifactory == 'yes' }}
+      run:  Remove-item alias:curl;
+            curl -X PUT -u ${{ secrets.USERNAME_ARTIFACTORY }}:${{ secrets.PASSWORD }} -T C:\GitHub_Actions\Manul_Inputs\Self_Hosted\Workspace\Manual_Build_Inputs\Manual_Build_Inputs\target\HelloWorld.war "http://localhost:8082/artifactory/CG-libs-release-local/HelloWorld.war"
+  
+    - name: Check path
+      run: dir;
+          
+    
